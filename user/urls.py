@@ -7,6 +7,7 @@ from user.views import *
 
 urlpatterns = [
     path('signup', RegisterUserAPI.as_view()),
+    path('view-users', ViewUserAPI.as_view()),
 
 
 

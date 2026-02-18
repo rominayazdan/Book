@@ -9,4 +9,9 @@ class CanViewDeletedUser(BasePermission):
         return request.user.has_perm("user.can_view_deleted_user")
 
 
-
+class CustomPermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_authenticated:
+            return True
+        else:
+            return False

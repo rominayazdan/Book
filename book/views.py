@@ -3,7 +3,7 @@ from dataclasses import fields
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import datetime
-from django.db.models import Q
+from user.permissions import CustomPermission
 
 from django.template.context_processors import request
 
@@ -88,6 +88,22 @@ class GetBookAPI(generics.RetrieveDestroyAPIView):
 
 class BookListAPI(generics.ListAPIView):
     permission_classes = (AllowAny,)
+    serializer_class = BookSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            user_books = Book.objects.filter(added_by=user)
+            published_books = Book.objects.filter(is_published=True)
+
+            return user_books | published_books
+
+
+        return Book.objects.filter(is_published = True)
+
+
+class UserListBooksAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,CustomPermission)
     serializer_class = BookSerializer
 
     def get_queryset(self):

@@ -15,9 +15,6 @@ class AllObjectsUsersManager(UserManager):
 
 
 
-
-
-
 class User(AbstractUser):
     phone_number = models.CharField(max_length=11, unique=True)
     national_code = models.CharField(max_length=10, unique=True, null=True, blank=True)
@@ -29,8 +26,8 @@ class User(AbstractUser):
 
     class Meta:
         permissions = (
-            ("can_view_deleted_user", "Can view deleted users"),
-            ("can_edit", "Can edit users"),
+            ("can_view_all_books", "Can view all books"),
+            ("can_view_published_books", "Can view published books"),
         )
 
 

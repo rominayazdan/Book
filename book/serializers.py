@@ -1,18 +1,20 @@
 from rest_framework import serializers
-from book.models import Book
+from book.models import Book, ImageBook
 import datetime
 
 
+
+class ImageBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageBook
+        fields = ['id', 'name', 'book']
+
+
+
 class BookSerializer(serializers.ModelSerializer):
+    images = ImageBookSerializer(many=True, read_only=True)
+    added_by = serializers.StringRelatedField()
 
-    def to_internal_value(self, data):
-        print('data', data)
-        data['published_date'] = datetime.datetime.strptime(data['published_date'], '%Y/%m/%d').date()
-        print(data)
-        result = super().to_internal_value(data=data)
-
-        print(result)
-        return result
 
     def validate(self, attrs):
         if True:
@@ -21,9 +23,12 @@ class BookSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance=instance)
-        response['published_date'] = '1404-10-12'
+
         return response
 
     class Meta:
         model = Book
         fields = "__all__"
+
+
+

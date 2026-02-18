@@ -1,14 +1,20 @@
+from dataclasses import fields
+
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import datetime
-from book.models import Book
+from django.db.models import Q
+
+from django.template.context_processors import request
+
+from book.models import Book, ImageBook
 from django.views.decorators.csrf import csrf_exempt
 import json
 from book.forms import CreateBook
 from rest_framework.views import APIView
-from book.serializers import BookSerializer
+from book.serializers import BookSerializer, ImageBookSerializer
 from rest_framework import generics
-
+from rest_framework.permissions import AllowAny
 
 def current_datetime(request):
     print('request method is', request.method)
@@ -43,7 +49,7 @@ def book(request):
         except:
             pass
         return JsonResponse({'error': 'Data format is not correct'})
-    elif request.method == "DELETE":
+    elif request.method == "GET":
         books = list(Book.objects.values())
         return JsonResponse(books, safe=False)
 
@@ -54,6 +60,7 @@ def book(request):
 
 
 class BookAPI(APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         body = json.loads(request.body.decode('utf-8'))
@@ -69,7 +76,7 @@ class BookAPI(APIView):
 
 
 class BookGenericAPI(generics.ListCreateAPIView):
-
+    permission_classes = (AllowAny,)
     serializer_class = BookSerializer
     queryset = Book.objects.all()
 
@@ -78,3 +85,29 @@ class GetBookAPI(generics.RetrieveDestroyAPIView):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     lookup_field = "price"
+
+class BookListAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = BookSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            user_books = Book.objects.filter(added_by=user)
+            published_books = Book.objects.filter(is_published=True)
+
+            return user_books | published_books
+
+
+        return Book.objects.filter(is_published = True)
+
+
+
+
+
+
+class AddImageAPI(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ImageBookSerializer
+
+    queryset = ImageBook.objects.all()

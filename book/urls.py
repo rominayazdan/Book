@@ -16,6 +16,8 @@ urlpatterns = [
     path('book-generic', BookGenericAPI.as_view()),
     path('book-generic/<int:price>', BookGenericAPI.as_view()),
     path('get-book/<str:price>', GetBookAPI.as_view()),
+    path('add_image', AddImageAPI.as_view()),
+    path('book-list', BookListAPI.as_view()),
 
 
 ]

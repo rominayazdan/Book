@@ -3,6 +3,8 @@ from dataclasses import fields
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import datetime
+
+from book.paginations import BookPagination
 from user.permissions import CustomPermission
 
 from django.template.context_processors import request
@@ -15,6 +17,10 @@ from rest_framework.views import APIView
 from book.serializers import BookSerializer, ImageBookSerializer
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
+from book.paginations import BookPagination
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
+
 
 def current_datetime(request):
     print('request method is', request.method)
@@ -79,6 +85,7 @@ class BookGenericAPI(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = BookSerializer
     queryset = Book.objects.all()
+    pagination_class = BookPagination
 
 
 class GetBookAPI(generics.RetrieveDestroyAPIView):
@@ -103,20 +110,19 @@ class BookListAPI(generics.ListAPIView):
 
 
 class UserListBooksAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,CustomPermission)
+    permission_classes = (AllowAny,)
     serializer_class = BookSerializer
+    pagination_class = BookPagination
 
     def get_queryset(self):
         user = self.request.user
+
         if user.is_authenticated:
-            user_books = Book.objects.filter(added_by=user)
-            published_books = Book.objects.filter(is_published=True)
+            return Book.objects.filter(
+                Q(added=user) | Q(is_published=True)
+            )
 
-            return user_books | published_books
-
-
-        return Book.objects.filter(is_published = True)
-
+        return Book.objects.filter(is_published=True)
 
 
 
